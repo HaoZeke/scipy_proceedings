@@ -84,7 +84,7 @@ class Mailer:
 
     def make_email(self, sender: str, data: t.Dict) -> EmailMessage:
         email = EmailMessage()
-        body: str = _from_template("../mail/templates/" + self.template_path, data)
+        body: str = _from_template(f"../mail/templates/{self.template_path}", data)
         email.set_content(body)
         email["From"] = sender
         if "to_emails" in data:

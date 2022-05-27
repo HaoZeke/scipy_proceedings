@@ -8,9 +8,7 @@ if sys.version < "3":
 else:
 
     def b(s):
-        if isinstance(s, str):
-            return s.encode('latin1')
-        return bytes(s)
+        return s.encode('latin1') if isinstance(s, str) else bytes(s)
     basestring_ = (bytes, str)
     bytes = bytes
 text = str
@@ -34,12 +32,6 @@ else:
 
 def coerce_text(v):
     if not isinstance(v, basestring_):
-        if sys.version < "3":
-            attr = '__unicode__'
-        else:
-            attr = '__str__'
-        if hasattr(v, attr):
-            return str(v)
-        else:
-            return bytes(v)
+        attr = '__unicode__' if sys.version < "3" else '__str__'
+        return str(v) if hasattr(v, attr) else bytes(v)
     return v

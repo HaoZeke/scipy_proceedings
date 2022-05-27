@@ -28,22 +28,23 @@ def cfg2dict(filename):
 
     """
     if not os.path.exists(filename):
-        print('*** Warning: %s does not exist.' % filename)
+        print(f'*** Warning: {filename} does not exist.')
         return {}
 
-    _backup_filename = filename+'.bak'
+    _backup_filename = f'{filename}.bak'
     if os.path.exists(_backup_filename):
         os.remove(_backup_filename)
-        print('found previous backup file {}, removing...'.format(_backup_filename))
+        print(f'found previous backup file {_backup_filename}, removing...')
 
     try:
         with io.open(filename,  mode='r', encoding='utf-8') as f:
             return json.loads(f.read())
     except ValueError as err:
-        os.rename(filename,filename+'.bak')
-        print('{} is not a valid json file, moving to {} for debugging.'
-              'Running again will remove backup file.'
-              .format(filename, _backup_filename))
+        os.rename(filename, f'{filename}.bak')
+        print(
+            f'{filename} is not a valid json file, moving to {_backup_filename} for debugging.Running again will remove backup file.'
+        )
+
         return {}
 
 def dict2cfg(d, filename):

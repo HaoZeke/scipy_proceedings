@@ -88,7 +88,7 @@ if __name__ == "__main__":
         toc_entries.append(stats)
 
         src_pdf = os.path.join(output_dir, paper_id, 'paper.pdf')
-        dest_pdf = os.path.join(pdf_dir, paper_id+'.pdf')
+        dest_pdf = os.path.join(pdf_dir, f'{paper_id}.pdf')
         shutil.copy(src_pdf, dest_pdf)
 
     for track_dir, folder_ids in other_dirs.items():
