@@ -158,7 +158,7 @@ class XrefMeta:
             surname.text = last_name
             if contributor in orcid_map:
                 orcid = xml.SubElement(person_name, 'ORCID')
-                orcid.text = 'https://orcid.org/' + orcid_map[contributor]
+                orcid.text = f'https://orcid.org/{orcid_map[contributor]}'
         titles = xml.SubElement(paper, 'titles')
         title = xml.SubElement(titles, 'title')
         title.text = entry.get('title', '')
@@ -231,8 +231,8 @@ class XrefMeta:
 
     def write_metadata(self, filepath_root):
         """Dump doi metadata batches to filepath_root + suffix"""
-        xml.ElementTree(self.papers_batch).write(filepath_root + '_papers.xml')
-        xml.ElementTree(self.slides_batch).write(filepath_root + '_slides.xml')
+        xml.ElementTree(self.papers_batch).write(f'{filepath_root}_papers.xml')
+        xml.ElementTree(self.slides_batch).write(f'{filepath_root}_slides.xml')
 
     def paper_url(self, paper_id):
         """Return the url where a particular paper will end up.
@@ -240,7 +240,7 @@ class XrefMeta:
         The "paper_id" is pulled out of the toc, and is literally whatever the
         author named the folder that they put their paper in
         """
-        page = paper_id + '.html'
+        page = f'{paper_id}.html'
         return '/'.join([self.proceedings_url(), page])
 
     def proceedings_url(self):

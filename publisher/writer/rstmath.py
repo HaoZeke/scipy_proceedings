@@ -17,11 +17,7 @@ class PartLaTeX(nodes.Part, nodes.Element):
     pass
 
 def mathEnv(math, label, type):
-    if label:
-        eqn_star = ''
-    else:
-        eqn_star = '*'
-
+    eqn_star = '' if label else '*'
     if type in ("split", "gathered"):
         begin = "\\begin{equation%s}\n\\begin{%s}\n" % (type, eqn_star)
         end = "\\end{%s}\n\\end{equation%s}\n" % (type, eqn_star)
@@ -53,8 +49,7 @@ class MathDirective(Directive):
         node['latex'] = latex.strip()
         node['label'] = self.options.get('label', None)
         node['type'] = self.options.get('type', "equation")
-        ret = [node]
-        return ret
+        return [node]
 
 class LaTeXDirective(Directive):
     has_content = True
@@ -71,8 +66,7 @@ class LaTeXDirective(Directive):
         node = PartLaTeX()
         node['latex'] = latex
         node['usepackage'] = self.options.get("usepackage", "").split(",")
-        ret = [node]
-        return ret
+        return [node]
 
 
 roles.register_local_role("math", mathRole)

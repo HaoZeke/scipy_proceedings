@@ -35,9 +35,9 @@ class Translator(LaTeXTranslator):
         self.copyright_holder = None
         self.author_names = []
         self.author_institutions = []
-        self.author_institution_map = dict()
+        self.author_institution_map = {}
         self.author_emails = []
-        self.author_orcid_map = dict()
+        self.author_orcid_map = {}
         self.corresponding = []
         self.equal_contributors = []
         self.paper_title = ''
@@ -150,9 +150,10 @@ class Translator(LaTeXTranslator):
         equal_footmark = self.footmark(2)
 
         # Build one footmark for each institution
-        institute_footmark = {}
-        for i, inst in enumerate(institution_authors):
-            institute_footmark[inst] = self.footmark(i + 3)
+        institute_footmark = {
+            inst: self.footmark(i + 3)
+            for i, inst in enumerate(institution_authors)
+        }
 
         footmark_template = r'\thanks{%(footmark)s %(instutions)}'
         corresponding_auth_template = r'''%%
@@ -167,14 +168,15 @@ class Translator(LaTeXTranslator):
         authors = []
         institutions_mentioned = set()
         equal_authors_mentioned = False
-        corr_emails = []
         if len(self.corresponding) == 0:
             self.corresponding = [self.author_names[0]]
-        for n, auth in enumerate(self.author_names):
-            if auth in self.corresponding:
-                corr_emails.append(self.author_emails[n])
+        corr_emails = [
+            self.author_emails[n]
+            for n, auth in enumerate(self.author_names)
+            if auth in self.corresponding
+        ]
 
-        for n, auth in enumerate(self.author_names):
+        for auth in self.author_names:
             # get footmarks
             footmarks = ''.join([''.join(institute_footmark[inst]) for inst in self.author_institution_map[auth]])
             if auth in self.equal_contributors:
@@ -200,7 +202,7 @@ class Translator(LaTeXTranslator):
                      'email': ', '.join(corr_emails)}
 
             for inst in self.author_institution_map[auth]:
-                if not inst in institutions_mentioned:
+                if inst not in institutions_mentioned:
                     fm_counter, fm = institute_footmark[inst]
                     authors[-1] += r'%(footmark_counter)s\thanks{%(footmark)s %(institution)s}' % \
                                 {'footmark_counter': fm_counter,
@@ -235,16 +237,17 @@ class Translator(LaTeXTranslator):
 
         ## Set up title and page headers
 
-        if not self.latex_video_url:
-            video_template = ''
-        else:
-            video_template = '\\\\\\vspace{5mm}\\tt\\url{%s}\\vspace{-5mm}' % self.latex_video_url
+        video_template = (
+            '\\\\\\vspace{5mm}\\tt\\url{%s}\\vspace{-5mm}' % self.latex_video_url
+            if self.latex_video_url
+            else ''
+        )
 
         title_template = r'\newcounter{footnotecounter}' \
                 r'\title{%s}\author{%s' \
                 r'%s}\maketitle'
-        title_template = title_template % (title, ', '.join(authors),
-                                           video_template)
+        title_template %= (title, ', '.join(authors), video_template)
+
 
         marks = r'''
           \renewcommand{\leftmark}{%s}
@@ -269,7 +272,7 @@ class Translator(LaTeXTranslator):
                                'bibliography':self.bibliography}
 
         if hasattr(self, 'bibtex') and self.bibtex:
-            self.document.stats.update({'bibliography': self.bibtex[1]})
+            self.document.stats['bibliography'] = self.bibtex[1]
 
     def end_open_abstract(self, node):
         if 'abstract' not in node['classes'] and self.abstract_in_progress:
@@ -312,11 +315,10 @@ class Translator(LaTeXTranslator):
         elif self.non_breaking_paragraph:
             self.non_breaking_paragraph = False
 
+        elif self.active_table.is_open():
+            self.out.append('\n')
         else:
-            if self.active_table.is_open():
-                self.out.append('\n')
-            else:
-                self.out.append('\n\n')
+            self.out.append('\n\n')
 
     def depart_paragraph(self, node):
         if 'keywords' in node['classes']:
@@ -327,7 +329,7 @@ class Translator(LaTeXTranslator):
 
         self.figure_type = 'figure'
         if 'classes' in node.attributes:
-            placements = '[%s]' % ''.join(node.attributes['classes'])
+            placements = f"[{''.join(node.attributes['classes'])}]"
             if 'w' in placements:
                 placements = placements.replace('w', '')
                 self.figure_type = 'figure*'
@@ -347,11 +349,7 @@ class Translator(LaTeXTranslator):
         scale = node.attributes.get('scale', None)
         filename = node.attributes['uri']
 
-        if self.figure_type == 'figure*':
-            width = r'\textwidth'
-        else:
-            width = r'\columnwidth'
-
+        width = r'\textwidth' if self.figure_type == 'figure*' else r'\columnwidth'
         figure_opts = []
 
         if scale is not None:
@@ -379,11 +377,7 @@ class Translator(LaTeXTranslator):
 
     def visit_table(self, node):
         classes = node.attributes.get('classes', [])
-        if 'w' in classes:
-            self.table_type = 'table*'
-        else:
-            self.table_type = 'table'
-
+        self.table_type = 'table*' if 'w' in classes else 'table'
         self.out.append(r'\begin{%s}' % self.table_type)
         LaTeXTranslator.visit_table(self, node)
 
@@ -486,18 +480,16 @@ class Translator(LaTeXTranslator):
         """
         groups = orcid.split('-')
         if len(groups) != 4:
-            raise ValueError('ORCID {} must have four groups of digits'
-                             .format(orcid))
+            raise ValueError(f'ORCID {orcid} must have four groups of digits')
         packed_orcid = orcid.replace('-', '')
         if len(packed_orcid) != 16:
-            raise ValueError('ORCID {} has incorrect length'.format(orcid))
+            raise ValueError(f'ORCID {orcid} has incorrect length')
         checksum_char = packed_orcid[-1]
         first15 = packed_orcid[:-1]
         if not first15.isdigit():
-            raise ValueError('ORCID {} has non-digit characters'.format(orcid))
+            raise ValueError(f'ORCID {orcid} has non-digit characters')
         if not((checksum_char == 'X') or checksum_char.isdigit()):
-            raise ValueError('ORCID {} last character must be digit or "X"'
-                             .format(orcid))
+            raise ValueError(f'ORCID {orcid} last character must be digit or "X"')
         total = 0
         for c in first15:
             total = (total + int(c))*2
@@ -505,8 +497,10 @@ class Translator(LaTeXTranslator):
         result = (12 - remainder) % 11
         if ((checksum_char == 'X' and result != 10) or
                 (checksum_char.isdigit() and result != int(checksum_char))):
-            raise ValueError('ORCID {} has last char {} and checksum {}'
-                             .format(orcid, checksum_char, result))
+            raise ValueError(
+                f'ORCID {orcid} has last char {checksum_char} and checksum {result}'
+            )
+
         return
 
 

@@ -32,7 +32,7 @@ class Clock:
 
 def make_series_doi(prefix, issn):
     """Given prefix and issn, return appropriate doi for series"""
-    formatted_issn = "issn.{}".format(issn)
+    formatted_issn = f"issn.{issn}"
     return '/'.join([prefix, formatted_issn])
 
 def make_doi(prefix):
@@ -66,10 +66,11 @@ def get_commit():
     """Returns short git commit hash. Must be called from within a valid
     repository.
     """
-    result = check_output(
-            ['git', 'rev-parse', '--verify', '--short', 'HEAD']
-        ).decode('utf-8').replace('\n', '')
-    return result
+    return (
+        check_output(['git', 'rev-parse', '--verify', '--short', 'HEAD'])
+        .decode('utf-8')
+        .replace('\n', '')
+    )
 
 def get_clock():
     """Returns monotonically increasing integers.

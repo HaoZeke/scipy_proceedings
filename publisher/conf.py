@@ -33,12 +33,23 @@ if os.path.isfile(toc_list):
     with io.open(toc_list, 'r', encoding='utf-8') as f:
         dirs = f.read().splitlines()
 else:
-    dirs = sorted([os.path.basename(d)
-                   for d in glob.glob('%s/*' % papers_dir)
-                   if os.path.isdir(d) and not any(e in d for e in excludes)])
+    dirs = sorted(
+        [
+            os.path.basename(d)
+            for d in glob.glob(f'{papers_dir}/*')
+            if os.path.isdir(d) and all(e not in d for e in excludes)
+        ]
+    )
 
-other_dirs = {dir: sorted([os.path.basename(subdir)
-                     for subdir in glob.glob('%s/*' % dir)
-                     if os.path.isdir(subdir) and not any(e in subdir for e in excludes)])
-                     for dir in (slides_dir, posters_dir, lightning_dir, tools_dir)}
+
+other_dirs = {
+    dir: sorted(
+        [
+            os.path.basename(subdir)
+            for subdir in glob.glob(f'{dir}/*')
+            if os.path.isdir(subdir) and all(e not in subdir for e in excludes)
+        ]
+    )
+    for dir in (slides_dir, posters_dir, lightning_dir, tools_dir)
+}
 

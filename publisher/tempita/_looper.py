@@ -99,9 +99,7 @@ class loop_pos(object):
         next = __next__
 
     def previous(self):
-        if self.pos == 0:
-            return None
-        return self.seq[self.pos - 1]
+        return None if self.pos == 0 else self.seq[self.pos - 1]
     previous = property(previous)
 
     def odd(self):
@@ -152,11 +150,10 @@ class loop_pos(object):
         elif (isinstance(getter, basestring_)
               and getter.startswith('.')):
             getter = getter[1:]
-            if getter.endswith('()'):
-                getter = getter[:-2]
-                return getattr(item, getter)() != getattr(other, getter)()
-            else:
+            if not getter.endswith('()'):
                 return getattr(item, getter) != getattr(other, getter)
+            getter = getter[:-2]
+            return getattr(item, getter)() != getattr(other, getter)()
         elif hasattr(getter, '__call__'):
             return getter(item) != getter(other)
         else:

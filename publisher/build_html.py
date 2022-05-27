@@ -23,13 +23,13 @@ citation_key = config['proceedings']['citation_key'] # e.g. proc-scipy-2010
 bib_from_tmpl('proceedings', config, citation_key)
 
 proc_dict = deepcopy(config)
-proc_dict.update({
-    'pdf': 'pdfs/proceedings.pdf',
-    'bibtex': 'bib/' + citation_key + '.bib'
-    })
+proc_dict.update(
+    {'pdf': 'pdfs/proceedings.pdf', 'bibtex': f'bib/{citation_key}.bib'}
+)
+
 
 for dest_fn in ['index', 'organization', 'slides', 'students']:
-    html_from_tmpl(dest_fn+'.html', proc_dict, dest_fn)
+    html_from_tmpl(f'{dest_fn}.html', proc_dict, dest_fn)
 
 for article in config['toc']:
     art_dict = deepcopy(config)

@@ -29,7 +29,7 @@ class TeXTemplate(tempita.Template):
         return value
 
 def _from_template(tmpl_basename, config, use_html=True):
-    tmpl = os.path.join(template_dir, tmpl_basename + '.tmpl')
+    tmpl = os.path.join(template_dir, f'{tmpl_basename}.tmpl')
     if use_html:
         with io.open(tmpl, mode='r', encoding='utf-8') as f:
             template = tempita.HTMLTemplate(f.read())
@@ -41,7 +41,7 @@ def _from_template(tmpl_basename, config, use_html=True):
 def from_template(tmpl_basename, config, dest_fn):
     extension = os.path.splitext(dest_fn)[1][1:]
 
-    use_html = False if 'tex' in extension else True
+    use_html = 'tex' not in extension
     outfile = _from_template(tmpl_basename, config, use_html=use_html)
     outname = os.path.join(build_dir, extension, dest_fn)
 
@@ -49,10 +49,10 @@ def from_template(tmpl_basename, config, dest_fn):
         f.write(outfile)
 
 def bib_from_tmpl(bib_type, config, target):
-    tmpl_basename = bib_type + '.bib'
-    dest_path = os.path.join(bib_dir, target + '.bib')
+    tmpl_basename = f'{bib_type}.bib'
+    dest_path = os.path.join(bib_dir, f'{target}.bib')
     from_template(tmpl_basename, config, dest_path)
-    command_line = 'recode -d u8..ltex ' + dest_path
+    command_line = f'recode -d u8..ltex {dest_path}'
     run = subprocess.Popen(command_line, shell=True, stdout=subprocess.PIPE)
     out, err = run.communicate()
 
@@ -68,7 +68,7 @@ def html_from_tmpl(src, config, target):
     content =  _from_template(src, config)
 
     outfile = header+content
-    dest_fn = os.path.join(html_dir, target + '.html')
+    dest_fn = os.path.join(html_dir, f'{target}.html')
     extension = os.path.splitext(dest_fn)[1][1:]
     outname = os.path.join(build_dir, extension, dest_fn)
     with io.open(outname, mode='w', encoding='utf-8') as f:
@@ -83,17 +83,17 @@ def copy_static_files(dest_fn):
 
 if __name__ == "__main__":
 
-    if not len(sys.argv) == 2:
+    if len(sys.argv) != 2:
         print("Usage: build_template.py destination_name")
         sys.exit(-1)
 
     dest_fn = sys.argv[1]
-    template_fn = os.path.join(template_dir, dest_fn+'.tmpl')
+    template_fn = os.path.join(template_dir, f'{dest_fn}.tmpl')
 
     if not os.path.exists(template_fn):
         print("Cannot find template.")
         sys.exit(-1)
-        
+
     config = get_config()
     from_template(dest_fn, config, dest_fn)
     copy_static_files(dest_fn)

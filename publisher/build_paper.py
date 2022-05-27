@@ -112,7 +112,7 @@ def tex2pdf(out_path):
 
     # Sometimes Latex want us to rebuild because labels have changed.
     # We will try at most 5 times.
-    for i in range(5):
+    for _ in range(5):
         out, retry = tex2pdf_singlepass(out_path)
         if not retry:
             # Building succeeded or failed outright
@@ -164,7 +164,7 @@ def tex2pdf_singlepass(out_path):
     bib_file = os.path.join(out_path, d["bibliography"] + '.bib')
 
     if os.path.exists(bib_file):
-        bibtex_cmd = 'bibtex paper && ' + command_line
+        bibtex_cmd = f'bibtex paper && {command_line}'
         run = subprocess.Popen(bibtex_cmd, shell=True,
                 stdin=dummy,
                 stdout=subprocess.PIPE,
@@ -200,8 +200,7 @@ def page_count(pdflatex_stdout, paper_dir):
     d = options.cfg2dict(cfgname)
 
     for line in pdflatex_stdout.splitlines():
-        m = regexp.match(line)
-        if m:
+        if m := regexp.match(line):
             pages = m.groups()[0]
             d.update({'pages': int(pages)})
             break
@@ -230,7 +229,7 @@ if __name__ == "__main__":
 
     in_path = os.path.normpath(sys.argv[1])
     if not os.path.isdir(in_path):
-        print("Cannot open directory: %s" % in_path)
+        print(f"Cannot open directory: {in_path}")
         sys.exit(-1)
 
     paper_id = os.path.basename(in_path)
